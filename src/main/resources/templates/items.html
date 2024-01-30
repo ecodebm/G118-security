@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+</head>
+<body onload="loadItems()">
+<div class="container col-8 mx-auto">
+    <p>
+        <label for="nameField" class="sr-only">Name:</label>
+        <input type="text" id="nameField" class="form-control"
+               placeholder="Insert name...">
+    </p>
+    <p>
+        <label for="descriptionField" class="sr-only">Description:</label>
+        <input type="text" id="descriptionField" class="form-control"
+               placeholder="Insert description...">
+    </p>
+    <p>
+        <label for="priceField" class="sr-only">Price:</label>
+        <input type="text" id="priceField" class="form-control"
+               placeholder="0">
+    </p>
+    <p>
+        <label for="pointField" class="sr-only">Point:</label>
+        <input type="number" id="pointField" class="form-control"
+               placeholder="0">
+    </p>
+    <button onclick="create()" class="btn btn-success">ADD NEW ITEM</button>
+    <table class="table table-striped">
+        <thead>
+        <th>ID</th>
+        <th>NAME</th>
+        <th>DESCRIPTION</th>
+        <th>PRICE</th>
+        <th id="thPoint" style="display: none">POINT</th>
+        <th id="thMark" style="display: none">MARK</th>
+        <th>DETAILS</th>
+        <th>REMOVE</th>
+        </thead>
+        <tbody id="itemsId">
+
+        </tbody>
+    </table>
+    <script>
+        function loadItems() {
+            let req = new XMLHttpRequest();
+            req.open("GET", "http://localhost:8080/items")
+            req.send()
+            let result = ""
+            req.onload = function () {
+                let items = JSON.parse(req.responseText)
+                for (let i = 0; i < items.length; i++) {
+                    result += "<tr onmouseleave='hideFields("+items[i].id+")'>"
+                    result += "<td>" + items[i].id + "</td>"
+                    result += "<td>" + items[i].name + "</td>"
+                    result += "<td>" + items[i].description + "</td>"
+                    result += "<td>" + items[i].price + "</td>"
+                    result += "<td id='tdPoint"+items[i].id+"' style='display: none'>" + items[i].point + "</td>"
+                    result += "<td id='tdMark"+items[i].id+"' style='display: none'>" + items[i].mark + "</td>"
+                    result += "<td><button onclick='details("+items[i].id+")' class='btn btn-dark'>DETAILS</button></td>"
+                    result += "<td>"
+                    result += "<button onclick='remove(" + items[i].id + ")' class='btn btn-danger'>REMOVE</button>"
+                    result += "</td>"
+                    result += "</tr>"
+                }
+                document.getElementById('itemsId').innerHTML = result
+            }
+        }
+
+        function remove(id) {
+            let req = new XMLHttpRequest()
+            req.open("DELETE", "http://localhost:8080/items/" + id)
+            req.send()
+            req.onload = function () {
+                loadItems()
+            }
+        }
+
+        function create() {
+            let newItem = {
+                "name" : nameField.value,
+                "description" : descriptionField.value,
+                "point" : pointField.value,
+                "price" : priceField.value
+            }
+
+            let req = new XMLHttpRequest();
+            req.open("POST", "http://localhost:8080/items")
+            req.setRequestHeader("Content-Type", "application/json")
+            req.send(JSON.stringify(newItem))
+            req.onload = function () {
+                loadItems();
+            }
+        }
+
+        function details(id) {
+            thPoint.style = "display:table-cell"
+            thMark.style = "display:table-cell"
+            document.getElementById('tdPoint'+id).style = "display : table-cell"
+            document.getElementById('tdMark'+id).style = "display : table-cell"
+        }
+
+        function hideFields(id) {
+            thPoint.style = "display:none"
+            thMark.style = "display:none"
+            document.getElementById('tdPoint'+id).style = "display:none"
+            document.getElementById('tdMark'+id).style = "display:none"
+        }
+    </script>
+</div>
+</body>
+</html>
